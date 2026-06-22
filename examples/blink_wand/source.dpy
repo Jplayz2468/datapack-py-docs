@@ -1,0 +1,27 @@
+# Right-click the wand to teleport to the first solid block in front of you.
+custom_item(
+    blink_wand,
+    carrot_on_a_stick,
+    name=f"{aqua}{bold}Blink Wand",
+    lore=[f"{gray}Right-click to blink forward"],
+    cooldown="1s",
+    data={tool:"blink_wand"}
+)
+
+def init():
+    give_custom(players, blink_wand)
+    tell(players, f"{aqua}Blink Wand loaded.")
+
+def blink_trail():
+    particle(end_rod, pos=here, count=1)
+
+on_right_click(blink_wand):
+    with raycast_miss(
+        max=10,
+        step=1,
+        through=[air, cave_air, void_air],
+        __on_step=blink_trail
+    ):
+        particle(portal, pos=here, delta=vec3(0.2, 0.4, 0.2), speed=0.1, count=35, force=true)
+        playsound("minecraft:entity.enderman.teleport", target=me, volume=0.8, pitch=1.2)
+        tp(me, here)

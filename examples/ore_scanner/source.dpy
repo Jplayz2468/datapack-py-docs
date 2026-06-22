@@ -1,0 +1,29 @@
+# Hold the scanner to show mining stats. Right-click it to check the block under you.
+custom_item(
+    ore_scanner,
+    compass,
+    name=f"{gold}{bold}Ore Scanner",
+    lore=[f"{gray}Hold for stats", f"{gray}Right-click on ore to ping it"],
+    cooldown="0.5s",
+    data={tool:"ore_scanner"}
+)
+
+def init():
+    give_custom(players, ore_scanner)
+
+with as_players():
+    if holding(me, ore_scanner):
+        set_scoreboard_title(f"{gold}{bold}Ore Scanner")
+        set_scoreboard_line(f"{aqua}Diamond ore: {stat(mined, diamond_ore)}")
+        set_scoreboard_line(f"{red}Ancient debris: {stat(mined, ancient_debris)}")
+        set_scoreboard_line(f"{green}Scans: {me.scans}")
+
+on_right_click(ore_scanner):
+    me.scans = me.scans + 1
+    playsound("minecraft:block.note_block.pling", target=me, volume=0.6, pitch=1.8)
+    if block_is(below, diamond_ore):
+        title(me, f"{aqua}{bold}DIAMOND ORE")
+        actionbar(me, f"{gray}Scanner hit below your feet.")
+    if block_is(below, ancient_debris):
+        title(me, f"{red}{bold}ANCIENT DEBRIS")
+        actionbar(me, f"{gray}Scanner hit below your feet.")

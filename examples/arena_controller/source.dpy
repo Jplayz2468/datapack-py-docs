@@ -1,0 +1,65 @@
+# Right-click the arena key to advance through three generated encounter states.
+persist wave
+
+custom_item(
+    arena_key,
+    nether_star,
+    name=f"{red}{bold}Arena Key",
+    lore=[f"{gray}Right-click to start the next wave"],
+    glint=true,
+    cooldown="1s",
+    data={tool:"arena_key"}
+)
+
+def init():
+    wave = 1
+    bossbar_add(arena, f"{red}{bold}Arena")
+    bossbar_set(arena, color=red, style=notched_10, max=3, value=1, visible=true, players=players)
+    give_custom(players, arena_key)
+    tell(players, f"{gold}Arena controller loaded.")
+
+def wave_one():
+    summon(zombie, rel(2, 0, 2), name=f"{red}Arena Grunt", health=30, damage=5, tags=["arena"])
+    summon(zombie, rel(-2, 0, 2), name=f"{red}Arena Grunt", health=30, damage=5, tags=["arena"])
+    bossbar_set(arena, value=1, players=players)
+    wave = 2
+    title(players, f"{red}{bold}Wave 1")
+
+def wave_two():
+    summon(skeleton, rel(3, 0, 3), name=f"{gold}Arena Archer", health=24, tags=["arena"])
+    summon(stray, rel(-3, 0, 3), name=f"{aqua}Frost Archer", health=32, tags=["arena"])
+    bossbar_set(arena, value=2, players=players)
+    wave = 3
+    title(players, f"{gold}{bold}Wave 2")
+
+def final_wave():
+    summon(zombie, here, name=f"{dark_red}{bold}Arena Brute", health=120, damage=12, speed=0.35, tags=["arena", "boss"])
+    bossbar_set(arena, value=3, players=players)
+    wave = 4
+    title(players, f"{dark_red}{bold}Final Wave")
+
+def reset_arena():
+    kill(entities(tag="arena"))
+    bossbar_set(arena, value=1, players=players)
+    wave = 1
+    tell(players, f"{green}Arena reset.")
+
+on_right_click(arena_key):
+    current_wave = wave
+    if current_wave == 1:
+        call(wave_one)
+    if current_wave == 2:
+        call(wave_two)
+    if current_wave == 3:
+        call(final_wave)
+    if current_wave >= 4:
+        call(reset_arena)
+
+with as_each(entities(tag="arena")):
+    effect(me, glowing, seconds=1, hide=true)
+
+with as_players():
+    set_scoreboard_title(f"{red}{bold}Arena")
+    set_scoreboard_line(f"{gold}Next wave: {wave}")
+    if entity_near(me, entities(tag="arena", distance=12)):
+        actionbar(me, f"{red}Enemy nearby")
